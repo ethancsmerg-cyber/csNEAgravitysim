@@ -7,6 +7,7 @@ import random
 #Body class
 class Body:
     def __init__(self,name,x,y,m,vx,vy):
+        #all attributes of the Body class
         self.__name=name
         self.__x=x
         self.__y=y
@@ -17,6 +18,7 @@ class Body:
         self.__ay=0
         self.__trail=[]
 
+    #defines an unambiguous string representaition of an object
     def __repr__(self):
         return f"{self.__name}(({self.__x},{self.__y}), m={self.__m:.2e}kg, v=({self.__vx},{self.__vy})ms-1, a=({self.__ax},{self.__ay})ms-2)" 
     
@@ -42,11 +44,11 @@ class Body:
     def getTrail(self):
         return self.__trail
     def getCoord(self):
-        return [self.__x,self.__y]
+        return [self.__x,self.__y] #return as a "vector"
     def getV(self):
-        return [self.__vx,self.__vy]
+        return [self.__vx,self.__vy] #return as a "vector"
     def getA(self):
-        return [self.__ax,self.__ay]
+        return [self.__ax,self.__ay] #return as a "vector"
         
     #setter functions for all attributes except trail    
     def setName(self,newName):
@@ -68,6 +70,9 @@ class Body:
     def setXY(self,newX,newY):
         self.__x=newX
         self.__y=newY
+    def setV(self, newVX, newVY):
+        self.__vx = newVX
+        self.__vy = newVY
         
     #calculate the G force on the object
     def applyG(self,other,G):
@@ -75,9 +80,6 @@ class Body:
         dx = other.__x - self.__x
         dy = other.__y - self.__y
         r=(dx**2+dy**2)**0.5
-        #print(dx)
-        #print(dy)
-        #print(r)
         if r==0:
             return
         
@@ -92,9 +94,9 @@ class Body:
     
     #function to update body position according to acceleration on body
     def update(self,dt):
-        self.__vx=self.__vx+self.__ax*dt
-        self.__vy=self.__vy+self.__ay*dt
-        self.__x=self.__x+self.__vx*dt
+        self.__vx=self.__vx+self.__ax*dt #update vx and vy using ax,ay and dt
+        self.__vy=self.__vy+self.__ay*dt 
+        self.__x=self.__x+self.__vx*dt #update ax and ay using vx,vy and dt
         self.__y=self.__y+self.__vy*dt
         self.__trail.append([self.__x,self.__y])
         

@@ -5,10 +5,11 @@ dt=0.1
 bodies=[]
 coordRange = [-10000,10000]
 massRange = [10**-10,10**30]
-vRange = [-3*10**-8,3*10**8]
+vRange = [-3*10**8,3*10**8]
 aRange = [-10**10,10**10]
 #change to bounds
 
+#add a body to the simulation 
 def addBody(name,x,y,m,vx,vy):
     global coordRange
     global massRange
@@ -103,13 +104,52 @@ def editV(name,newVX,newVY):
         else:
             print("invalid input, try again")
 
-def editA(name,newAX,newAY):
-    selectedBody=getBody(name)
-    if selectedBody is None:
-        return
-    else:
-        if validateInput(newAX,aRange) and validateInput(newAY,aRange):
-            selectedBody.setA(newAX,newAY)
-        else:
-            print("invalid input, try again")
 
+def loadPreset(presetChoice):
+    global bodies
+    bodies.clear()
+    simulationTime=0
+    #camera.reset()
+
+    match presetChoice:
+        case "Earth-Moon":
+            addBody("Earth",0, 0, 8000000, 0, 0)
+            addBody("Moon",400, 0, 1000000, 0, -141)
+        case "Binary Star":
+            addBody("Star1",-200, 0, 5000000, 0, -100)
+            addBody("Star2",200, 0, 5000000, 0, 100)
+        case "Three Bodies":
+            addBody("Body1",0, -200, 3000000, 100, 0)
+            addBody("Body2",200, 100, 3000000, -50, -80)
+            addBody("Body3",-200, 100, 3000000, -50, 80)
+
+#add comments g
+
+#turn each attribute into a line of a save file so it can be read later to be loaded in
+def saveCurrent(filename):
+    if bodies == []:
+        print("nothing to save")
+        return
+    saveFile = open(f"{filename}.txt","w")
+    for body in bodies:
+        for attribute in body.getAttributes():
+            saveFile.write(str(attribute)+"\n")
+    saveFile.close()
+    print("saved successfully")
+
+#load a save file by reading each line and turning each into attributes
+def loadSaved(filename):
+    saveFile = open(f"{filename}.txt","r")
+    while True:
+        name = saveFile.readline().strip()
+        if not name:
+            break
+        x=float(saveFile.readline())
+        y=float(saveFile.readline())
+        m=float(saveFile.readline())
+        vx=float(saveFile.readline())
+        vy=float(saveFile.readline())
+        ax=float(saveFile.readline())
+        ay=float(saveFile.readline())
+        addBody(name,x,y,m,vx,vy)
+    saveFile.close() #had to close file to prevent corruption

@@ -66,12 +66,12 @@ print(validateInput("hello", coordRange))  #False
 print(validateInput(10000, coordRange))    #True
 print(validateInput(-10000, coordRange))   #True
 
-'''
+
 
 #addBody test with multiple bodies
 for i in range(1,6):
     addBody(f"body{i}",i,i,i,i,i)
-'''
+
 #removeBody test
 for body in bodies:
     print(body.getAttributes())
@@ -87,5 +87,44 @@ editPos("body3",0,0)
 editPos("body4",44,44)
 for body in bodies:
     print(body.getAttributes())
+
+#editM test
+addBody("Earth", 0, 0, 100, 0, 0)
+earth = getBody("Earth")
+print(earth.getM())
+
+editM("Earth", 500)        
+print(earth.getM()) 
+
+editM("Earth", -100)       
+print(earth.getM())
+
+editM("Earth", 0)          
+print(earth.getM())
+
+#editV test
+addBody("Earth", 0, 0, 100, 0, 0)
+earth = getBody("Earth")
+print(earth.getV())
+
+editV("Earth", 50, -50)    
+print(earth.getV())
+
+editV("Earth", 4*10**8, 0) 
+print(earth.getV())
+
+editV("Earth", "fast", 0)  
+print(earth.getV())
 '''
+
+#preset loadPreset, saveCurrent, loadSaved test
+presetChoice = "Binary Star"
+loadPreset(presetChoice)
+print([body.getAttributes() for body in bodies])
+print(bodies)
+saveCurrent("test")
+bodies.clear()
+print(bodies)
+loadSaved("test")
+print(bodies)
 
