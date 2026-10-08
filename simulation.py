@@ -1,6 +1,6 @@
 from body import Body
 
-G=6.67*10**-11
+G=1000#6.67*10**-11
 dt=0.1
 bodies=[]
 coordRange = [-10000,10000]
@@ -153,3 +153,4 @@ def loadSaved(filename):
         ay=float(saveFile.readline())
         addBody(name,x,y,m,vx,vy)
     saveFile.close() #had to close file to prevent corruption
+    

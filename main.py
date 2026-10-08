@@ -1,6 +1,6 @@
 from body import Body
 from simulation import *
-
+from renderer import *
 
 #create point
 #Point = Body(1,2,3,4,5)
@@ -115,7 +115,7 @@ print(earth.getV())
 
 editV("Earth", "fast", 0)  
 print(earth.getV())
-'''
+
 
 #preset loadPreset, saveCurrent, loadSaved test
 presetChoice = "Binary Star"
@@ -128,3 +128,22 @@ print(bodies)
 loadSaved("test")
 print(bodies)
 
+
+#drawBody test
+addBody("Test",0,0,1*10**6,0,0)
+
+camX,camY=0,0
+zoom=1.0
+screen=pygame.display.set_mode((WIDTH,HEIGHT))
+screen.fill(BLACK)
+
+
+for body in bodies:
+    drawBody(screen, body, camX, camY, zoom)
+
+pygame.display.flip()
+pygame.time.wait(3000)
+pygame.quit()
+'''
+
+run()  

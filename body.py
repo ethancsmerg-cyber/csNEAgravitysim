@@ -1,9 +1,6 @@
 import tkinter as tk
 import random
 
-
-
-
 #Body class
 class Body:
     def __init__(self,name,x,y,m,vx,vy):
