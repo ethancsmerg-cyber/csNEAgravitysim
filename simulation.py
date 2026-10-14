@@ -1,7 +1,8 @@
 from body import Body
+import math
 
 G=1000#6.67*10**-11
-dt=0.1
+dt=0.0001
 bodies=[]
 coordRange = [-10000,10000]
 massRange = [10**-10,10**30]
@@ -113,8 +114,8 @@ def loadPreset(presetChoice):
 
     match presetChoice:
         case "Earth-Moon":
-            addBody("Earth",0, 0, 8000000, 0, 0)
-            addBody("Moon",400, 0, 1000000, 0, -141)
+            addBody("Earth",0, 0, 80000000, 0, 0)
+            addBody("Moon",400, 0, 1000000, 0,-math.sqrt(1000 * 80000000 / 400))
         case "Binary Star":
             addBody("Star1",-200, 0, 5000000, 0, -100)
             addBody("Star2",200, 0, 5000000, 0, 100)
@@ -153,4 +154,4 @@ def loadSaved(filename):
         ay=float(saveFile.readline())
         addBody(name,x,y,m,vx,vy)
     saveFile.close() #had to close file to prevent corruption
-    
+

@@ -2,7 +2,7 @@ import pygame
 from simulation import *
 
 #define display 
-WIDTH, HEIGHT = 800,600
+WIDTH, HEIGHT = 1440,1080
 FPS = 60
 
 #define basic colours
@@ -12,7 +12,7 @@ YELLOW=(255,255,0)
 
 #find the radius of a body according to mass
 def calculateRadius(m):
-    return max(3, int((m ** 0.3)/10)) #scale this later in development
+    return max(3, int((m ** 0.3)/5)) #scale this later in development
 
 #print(calculateRadius(30))
 
@@ -34,6 +34,7 @@ def drawBody(screen,body,camX,camY,zoom):
     r=calculateRadius(body.getM())
     pygame.draw.circle(screen,YELLOW,(screenX,screenY),r)
 
+n=1 #number of times step is called during run
 def run():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH,HEIGHT))
@@ -41,23 +42,39 @@ def run():
     clock = pygame.time.Clock()
 
     camX,camY=0,0
-    zoom=0.3 #cahnged this from 1.0 add into documentation
+    zoom=1.0 #cahnged this from 1.0 add into documentation
     loadPreset("Earth-Moon")
     print(bodies)
+    paused = False
     running=True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running=False
-
-        step(bodies,G,dt)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    paused = not paused
+        if not paused:
+            for i in range(n):
+                step(bodies,G,dt)
 
         screen.fill(BLACK)
         for body in bodies:
-            drawBody(screen, body,camX,camY,zoom)
+            drawTrail(screen,body,camX,camY,zoom)
+            drawBody(screen,body,camX,camY,zoom)
+            
 
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
+
+
+def drawTrail(screen,body,camX,camY,zoom):
+    trail=body.getTrail()
+    for i in range(len(trail)-1):
+        x1,y1=worldToScreen(trail[i][0],trail[i][1],camX,camY,zoom,WIDTH,HEIGHT)
+        x2,y2=worldToScreen(trail[i+1][0],trail[i+1][1],camX,camY,zoom,WIDTH,HEIGHT)
+        pygame.draw.line(screen,WHITE,(x1,y1),(x2,y2),1)
+
 
 

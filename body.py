@@ -88,7 +88,7 @@ class Body:
         a = (G*self.__m)/(r**2)
         other.__ax = other.__ax+a*(-dx/r)
         other.__ay = other.__ay+a*(-dy/r)
-    
+   
     #function to update body position according to acceleration on body
     def update(self,dt):
         self.__vx=self.__vx+self.__ax*dt #update vx and vy using ax,ay and dt
@@ -99,3 +99,4 @@ class Body:
         
         self.__ax=0
         self.__ay=0
+
