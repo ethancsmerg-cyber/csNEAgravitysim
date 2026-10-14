@@ -54,6 +54,12 @@ def run():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
+                if event.key == pygame.K_1:
+                    loadPreset("Earth-Moon")
+                if event.key == pygame.K_2:
+                    loadPreset("Binary Star")
+                if event.key == pygame.K_3:
+                    loadPreset("Three Bodies")
         if not paused:
             for i in range(n):
                 step(bodies,G,dt)
