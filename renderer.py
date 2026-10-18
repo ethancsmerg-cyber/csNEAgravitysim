@@ -31,7 +31,7 @@ print(worldToScreen(100, 0, 0, 0, 2, 800, 600))
 
 def drawBody(screen,body,camX,camY,zoom):
     screenX,screenY=worldToScreen(body.getX(),body.getY(),camX,camY,zoom,WIDTH,HEIGHT)
-    r=calculateRadius(body.getM())
+    r=calculateRadius(body.getM())*zoom
     pygame.draw.circle(screen,YELLOW,(screenX,screenY),r)
 
 n=1 #number of times step is called during run
@@ -40,7 +40,7 @@ def run():
     screen = pygame.display.set_mode((WIDTH,HEIGHT))
     pygame.display.set_caption("Gravity Simulator")
     clock = pygame.time.Clock()
-
+    font = pygame.font.SysFont("arial", 16) 
     camX,camY=0,0
     zoom=1.0 #cahnged this from 1.0 add into documentation
     loadPreset("Earth-Moon")
@@ -60,16 +60,30 @@ def run():
                     loadPreset("Binary Star")
                 if event.key == pygame.K_3:
                     loadPreset("Three Bodies")
+            if event.type == pygame.MOUSEWHEEL:
+                zoom += event.y * 0.1
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            camX -= 10 / zoom
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            camX += 10 / zoom
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            camY -= 10 / zoom
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            camY += 10 / zoom
         if not paused:
             for i in range(n):
                 step(bodies,G,dt)
-
         screen.fill(BLACK)
         for body in bodies:
             drawTrail(screen,body,camX,camY,zoom)
             drawBody(screen,body,camX,camY,zoom)
-            
-
+        #print("blitting text")
+        pauseText = font.render("PAUSED" if paused else "RUNNING", True, WHITE)
+        screen.blit(pauseText, (100, 100))
+        controlsText = font.render("SPACE: pause | 1/2/3: presets | WASD: pan | scroll: zoom", True, WHITE)
+        screen.blit(controlsText, (10, HEIGHT - 25))
+        drawInfoPanel(screen,bodies,font)
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
@@ -82,5 +96,19 @@ def drawTrail(screen,body,camX,camY,zoom):
         x2,y2=worldToScreen(trail[i+1][0],trail[i+1][1],camX,camY,zoom,WIDTH,HEIGHT)
         pygame.draw.line(screen,WHITE,(x1,y1),(x2,y2),1)
 
-
-
+def drawInfoPanel(screen,bodies,font):
+    x=WIDTH-300
+    y=100
+    for body in bodies:
+        nameText = font.render(body.getName(), True, YELLOW)
+        screen.blit(nameText, (x, y))
+        y += 30
+        posText = font.render(f"pos: ({round(body.getX(),2)}, {round(body.getY(),2)})", True, WHITE)
+        screen.blit(posText, (x, y))
+        y += 30
+        velText = font.render(f"vel: {int(math.sqrt(sum(x**2 for x in body.getV())))}ms-1, ({round(body.getVX(),2)}, {round(body.getVY(),2)})", True, WHITE)
+        screen.blit(velText, (x, y))
+        y += 30
+        massText = font.render(f"mass: {body.getM():.2e}kg", True, WHITE)
+        screen.blit(massText, (x, y))
+        y += 50
