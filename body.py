@@ -99,4 +99,3 @@ class Body:
         
         self.__ax=0
         self.__ay=0
-

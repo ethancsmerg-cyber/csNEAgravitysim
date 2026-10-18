@@ -23,21 +23,13 @@ def addBody(name,x,y,m,vx,vy):
         print("invalid input, try again")
 
 #calculate the body forces and apply them by updating the positions.
-def step(bodies,G,dt):
+def step(bodies, G, dt):
     for i in range(len(bodies)):
-        for j in range(len(bodies)):
-            if i!=j:
-                dx=bodies[j].getX()-bodies[i].getX()
-                dy=bodies[j].getY()-bodies[i].getY()
-                distSq=(dx**2+dy**2)+0.0000000000000001 #softening factor
-                dist=distSq**0.5
-                f = (G*bodies[i].getM()*bodies[j].getM())/distSq
-                fx = f*(dx/dist)
-                fy = f*(dy/dist)
-                bodies[i].setAX(bodies[i].getAX()+(fx/bodies[i].getM()))
-                bodies[i].setAY(bodies[i].getAY()+(fy/bodies[i].getM()))
-    for i in range(len(bodies)):
-        bodies[i].update(dt)
+        for j in range(i + 1, len(bodies)):
+            bodies[i].applyG(bodies[j], G)
+
+    for body in bodies:
+        body.update(dt)
 
 #check if an input is numeric
 def isNumeric(value):
@@ -154,4 +146,3 @@ def loadSaved(filename):
         ay=float(saveFile.readline())
         addBody(name,x,y,m,vx,vy)
     saveFile.close() #had to close file to prevent corruption
-
