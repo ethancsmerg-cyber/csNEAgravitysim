@@ -15,6 +15,37 @@ def calculateRadius(m):
     return max(3, int((m ** 0.3)/5)) #scale this later in development
 
 #print(calculateRadius(30))
+class Button:
+    def __init__(self,x,y,width,height,text,colour=(60,60,60),textColour=(255,255,255)):
+        self.rect= pygame.Rect(x,y,width,height)
+        self.text=text
+        self.colour=colour
+        self.textColour=textColour
+        self.hovered=False
+
+    def draw(self,screen,font):
+        colour=(100,100,100) if self.hovered else self.colour
+        pygame.draw.rect(screen,colour,self.rect,border_radius=5)
+        pygame.draw.rect(screen,WHITE,self.rect,1,border_radius=5)
+        text=font.render(self.text,True,self.textColour)
+        textRect=text.get_rect(center=self.rect.center)
+        screen.blit(text,textRect)
+
+    def update(self,mousePos):
+        self.hovered = self.rect.collidepoint(mousePos)
+
+    def isClicked(self,mousePos):
+        return self.rect.collidepoint(mousePos)
+
+
+#put b4 the loop in run:
+btnWidth,btnHeight=180,45
+btnX=10
+buttons={
+    "add":Button(btnX,160,btnWidth,btnHeight,"Add body")
+}
+
+
 
 def worldToScreen(x,y,camX,camY,zoom,width,height):
     screenX=int((x-camX)*zoom+width//2)
@@ -112,3 +143,4 @@ def drawInfoPanel(screen,bodies,font):
         massText = font.render(f"mass: {body.getM():.2e}kg", True, WHITE)
         screen.blit(massText, (x, y))
         y += 50
+
