@@ -65,7 +65,7 @@ def run():
     font = pygame.font.SysFont("arial", 16) 
     camX,camY=0,0
     zoom=1.0 #cahnged this from 1.0 add into documentation
-    loadPreset("Earth-Moon")
+    loadPreset("Stationary Central Body")
     print(bodies)
     paused = False
     running=True
@@ -117,7 +117,7 @@ def run():
         pauseText = font.render("PAUSED" if paused else "RUNNING", True, WHITE)
         screen.blit(pauseText, (100, 100))
         controlsText = font.render("SPACE: pause | 1/2/3: presets | WASD: pan | scroll: zoom", True, WHITE)
-        screen.blit(controlsText, (10, HEIGHT - 25))
+        screen.blit(controlsText, (200,100))
         drawInfoPanel(screen,bodies,font)
         pygame.display.flip()
         clock.tick(FPS)
