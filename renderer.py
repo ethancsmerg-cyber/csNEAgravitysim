@@ -86,7 +86,7 @@ def run():
                 if event.key == pygame.K_SPACE:
                     paused = not paused
                 if event.key == pygame.K_1:
-                    loadPreset("Earth-Moon")
+                    loadPreset("Stationary Central Body")
                 if event.key == pygame.K_2:
                     loadPreset("Binary Star")
                 if event.key == pygame.K_3:

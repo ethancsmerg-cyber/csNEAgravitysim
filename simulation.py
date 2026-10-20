@@ -109,8 +109,8 @@ def loadPreset(presetChoice):
             addBody("Anchor Star",0, 0, 10000000000, 0, 0)
             addBody("Moon",500, 0, 10000, 0,-math.sqrt(1000 * 10000000000 / 500))
         case "Binary Star":
-            addBody("Star1",-200, 0, 5000000, 0, -2400)
-            addBody("Star2",200, 0, 5000000, 0, 2400)
+            addBody("Star1",-200, 0, 5000000, 0, -2500)
+            addBody("Star2",200, 0, 5000000, 0, 2500)
         case "Three Bodies":
             addBody("Body1",0, -200, 3000000, 100, 0)
             addBody("Body2",200, 100, 3000000, -50, -80)
