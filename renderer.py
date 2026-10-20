@@ -10,6 +10,28 @@ BLACK=(0,0,0)
 WHITE=(255,255,255)
 YELLOW=(255,255,0)
 
+class Button:
+    def __init__(self, x, y, width, height, text, colour=(60,60,60), textColour=(255,255,255)):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.colour = colour
+        self.textColour = textColour
+        self.hovered = False
+
+    def draw(self, screen, font):
+        colour = (100,100,100) if self.hovered else self.colour
+        pygame.draw.rect(screen, colour, self.rect, border_radius=5)
+        pygame.draw.rect(screen, WHITE, self.rect, 1, border_radius=5)
+        text = font.render(self.text, True, self.textColour)
+        textRect = text.get_rect(center=self.rect.center)
+        screen.blit(text, textRect)
+
+    def update(self, mousePos):
+        self.hovered = self.rect.collidepoint(mousePos)
+
+    def isClicked(self, mousePos):
+        return self.rect.collidepoint(mousePos)
+    
 #find the radius of a body according to mass
 def calculateRadius(m):
     return max(3, int((m ** 0.3)/5)) #scale this later in development
@@ -47,10 +69,19 @@ def run():
     print(bodies)
     paused = False
     running=True
+    btnW,btnH=180,45
+    btnX=10
+    buttons={
+        "add": Button(btnX,160,btnW,btnH,"Add Body")
+    }
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running=False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if buttons["add"].isClicked(event.pos):
+                        addMode = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
@@ -78,6 +109,10 @@ def run():
         for body in bodies:
             drawTrail(screen,body,camX,camY,zoom)
             drawBody(screen,body,camX,camY,zoom)
+            mousePos = pygame.mouse.get_pos()
+            for button in buttons.values():
+                button.update(mousePos)
+                button.draw(screen,font)
         #print("blitting text")
         pauseText = font.render("PAUSED" if paused else "RUNNING", True, WHITE)
         screen.blit(pauseText, (100, 100))

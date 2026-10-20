@@ -96,6 +96,8 @@ class Body:
         self.__x=self.__x+self.__vx*dt #update ax and ay using vx,vy and dt
         self.__y=self.__y+self.__vy*dt
         self.__trail.append([self.__x,self.__y])
+        if len(self.__trail)>5000:
+            self.__trail.pop(0)
         
         self.__ax=0
         self.__ay=0
