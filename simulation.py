@@ -57,45 +57,37 @@ def getBody(name):
 
 #remove a body from the simulation
 def removeBody(name):
-    selectedBody = getBody(name)
-    if selectedBody is None:
-        return
-    else:
-        confirmation = input("do you want to remove this body? (y/n): ")
-        if confirmation.lower() == "y":
-            bodies.remove(selectedBody)
-            #display()
+    if isinstance(name,Body):
+        if name in bodies:
+            bodies.remove(name)
 
 #edit a body within the simulation
 def editPos(name,newX,newY):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
-    else:
-        if validateInput(newX,coordRange) and validateInput(newY,coordRange):
+    if validateInput(newX,coordRange) and validateInput(newY,coordRange):
             selectedBody.setXY(newX,newY)
-        else:
-            print("invalid input, try again")
+    else:
+        print("invalid input, try again")
 
 def editM(name,newM):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
-    else: 
-        if validateInput(newM,massRange):
-            selectedBody.setM(newM)
-        else:
-            print("invalid input, try again")
+    if validateInput(newM,massRange):
+        selectedBody.setM(newM)
+    else:
+         print("invalid input, try again")
 
 def editV(name,newVX,newVY):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
+    if validateInput(newVX,vRange) and validateInput(newVY,vRange):
+        selectedBody.setV(newVX,newVY)
     else:
-        if validateInput(newVX,vRange) and validateInput(newVY,vRange):
-            selectedBody.setV(newVX,newVY)
-        else:
-            print("invalid input, try again")
+        print("invalid input, try again")
 
 
 def loadPreset(presetChoice):
