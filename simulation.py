@@ -60,6 +60,10 @@ def removeBody(name):
     if isinstance(name,Body):
         if name in bodies:
             bodies.remove(name)
+    else:
+        selectedBody=getBody(name)
+        if selectedBody:
+            bodies.remove(selectedBody)
 
 #edit a body within the simulation
 def editPos(name,newX,newY):

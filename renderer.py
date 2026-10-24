@@ -114,13 +114,57 @@ def run():
     backspaceHeld = 0
     backspaceDelay = 30 
     backspaceInterval = 3 
-
+    last_click_time=0
+    threshold=500
+    followed_body=None
+    pending_body=None
+    delete_buttons={}
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running=False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    clicked_hud_delete=False
+                    for body,rect in delete_buttons.items():
+                        if rect.collidepoint(event.pos):
+                            pending_body=body
+                            clicked_hud_delete=True
+                    if pending_body:
+                        x=WIDTH//2-200
+                        y=HEIGHT//2-100
+                        yes_rect=pygame.Rect(x+50,y+120,100,40)
+                        no_rect=pygame.Rect(x+250,y+120,100,40)
+
+                        if yes_rect.collidepoint(event.pos):
+                            removeBody(pending_body)
+                            if followed_body==pending_body:
+                                followed_body=None
+                            pending_body=None
+                            clicked_hud_delete=True
+                        elif no_rect.collidepoint(event.pos):
+                            pending_body=None
+                            clicked_hud_delete=True
+                            
+                    current_time = pygame.time.get_ticks()
+                    mouseX,mouseY=event.pos
+                    if current_time-last_click_time<threshold:
+                        for body in bodies:
+                            screenX,screenY=worldToScreen(body.getX(),body.getY(),camX,camY,zoom,WIDTH,HEIGHT)
+                            r = max(calculateRadius(body.getM()) * zoom, 10)
+                            dsq=(mouseX-screenX)**2+(mouseY-screenY)**2
+                            d=math.sqrt(dsq)
+                            if d<=r:
+                                clicked_body=body
+                        if clicked_body:
+                            if followed_body==clicked_body:
+                                followed_body=None
+                            else:
+                                followed_body=clicked_body
+                        else:
+                            clicked_body=None
+                    else:
+                        last_click_time=current_time 
                     if buttons["add"].isClicked(event.pos):
                         addMode = not addMode
                         removeMode=False
@@ -159,12 +203,12 @@ def run():
                             panelX=WIDTH//2-150
                             panelY=HEIGHT//2-200
                             editPanel = {
-                                    "name": inputBox(panelX, panelY + 50, 300, 40, "Name:", body.getName()),
-                                    "x":    inputBox(panelX, panelY + 130, 300, 40, "X:", body.getX()),
-                                    "y":    inputBox(panelX, panelY + 210, 300, 40, "Y:", body.getY()),
-                                    "m":    inputBox(panelX, panelY + 290, 300, 40, "Mass:", body.getM()),
-                                    "vx":   inputBox(panelX, panelY + 370, 300, 40, "VX:", body.getV()[0]),
-                                    "vy":   inputBox(panelX, panelY + 450, 300, 40, "VY:", body.getV()[1]),
+                                    "name": inputBox(panelX, panelY + 50, 300, 40, "Name:", body_to_edit.getName()),
+                                    "x":    inputBox(panelX, panelY + 130, 300, 40, "X:", body_to_edit.getX()),
+                                    "y":    inputBox(panelX, panelY + 210, 300, 40, "Y:", body_to_edit.getY()),
+                                    "m":    inputBox(panelX, panelY + 290, 300, 40, "Mass:", body_to_edit.getM()),
+                                    "vx":   inputBox(panelX, panelY + 370, 300, 40, "VX:", body_to_edit.getV()[0]),
+                                    "vy":   inputBox(panelX, panelY + 450, 300, 40, "VY:", body_to_edit.getV()[1]),
                                     "confirm": Button(panelX, panelY + 520, 140, 45, "Confirm"),
                                     "cancel":  Button(panelX + 160, panelY + 520, 140, 45, "Cancel"),
                                 }
@@ -258,6 +302,12 @@ def run():
             
         else:
             backspaceHeld = 0
+        if followed_body:
+            if followed_body in bodies:
+                camX=followed_body.getX()
+                camY=followed_body.getY()
+            else:
+                followed_body=None
         if not paused:
             for i in range(n):
                 step(bodies,G,dt)
@@ -296,7 +346,8 @@ def run():
         screen.blit(pauseText, (50, 100))
         controlsText = font.render("SPACE: pause | 1/2/3: presets | WASD: pan | scroll: zoom", True, WHITE)
         screen.blit(controlsText, (140,100))
-        drawInfoPanel(screen,bodies,font)
+        delete_buttons=drawInfoPanel(screen,bodies,font)
+        
         if addMode:
             hintText = font.render("Right click to place body", True, YELLOW)
             screen.blit(hintText, (500,100))
@@ -321,9 +372,17 @@ def drawTrail(screen,body,camX,camY,zoom):
 def drawInfoPanel(screen,bodies,font):
     x=WIDTH-300
     y=100
+    button_rects={}
     for body in bodies:
         nameText = font.render(body.getName(), True, YELLOW)
         screen.blit(nameText, (x, y))
+        name_width = nameText.get_width()
+        del_rect=pygame.Rect(x+name_width+10,y,20,20)
+        pygame.draw.rect(screen,RED,del_rect,border_radius=3)
+        del_text=font.render("X",True,WHITE)
+        screen.blit(del_text,(del_rect.x+6,del_rect.y+1))
+        button_rects[body]=del_rect
+
         y += 30
         posText = font.render(f"pos: ({round(body.getX(),2)}, {round(body.getY(),2)})", True, WHITE)
         screen.blit(posText, (x, y))
@@ -334,3 +393,4 @@ def drawInfoPanel(screen,bodies,font):
         massText = font.render(f"mass: {body.getM():.2e}kg", True, WHITE)
         screen.blit(massText, (x, y))
         y += 50
+    return button_rects
