@@ -81,10 +81,12 @@ print(worldToScreen(0, 0, 0, 0, 2, 800, 600))
 print(worldToScreen(100, 0, 0, 0, 2, 800, 600)) 
 '''
 
-def drawBody(screen,body,camX,camY,zoom):
+def drawBody(screen,body,camX,camY,zoom,font):
     screenX,screenY=worldToScreen(body.getX(),body.getY(),camX,camY,zoom,WIDTH,HEIGHT)
     r=calculateRadius(body.getM())*zoom
     pygame.draw.circle(screen,YELLOW,(screenX,screenY),r)
+    bodyLabelText = font.render(f"{body.getName()}",True,WHITE)
+    screen.blit(bodyLabelText,(screenX-bodyLabelText.get_width()//2,screenY-r-15-bodyLabelText.get_height()))
 
 n=1 #number of times step is called during run
 def run():
@@ -109,7 +111,9 @@ def run():
     buttons={
         "add": Button(btnX,160,btnW,btnH,"Add Body"),
         "remove": Button(btnX,220,btnW,btnH,"Remove Body"),
-        "edit": Button(btnX,280,btnW,btnH,"Edit Body")
+        "edit": Button(btnX,280,btnW,btnH,"Edit Body"),
+        "save": Button(btnX,340,btnW,btnH,"Save"),
+        "load": Button(btnX,400,btnW,btnH,"Load")
     }
     backspaceHeld = 0
     backspaceDelay = 30 
@@ -125,29 +129,26 @@ def run():
                 running=False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    clicked_hud_delete=False
-                    for body,rect in delete_buttons.items():
+                    for body, rect in delete_buttons.items():
                         if rect.collidepoint(event.pos):
-                            pending_body=body
-                            clicked_hud_delete=True
-                    if pending_body:
-                        x=WIDTH//2-200
-                        y=HEIGHT//2-100
-                        yes_rect=pygame.Rect(x+50,y+120,100,40)
-                        no_rect=pygame.Rect(x+250,y+120,100,40)
-
+                            pending_body = body
+                            break
+                    if pending_body and not any(rect.collidepoint(event.pos) for rect in delete_buttons.values()):
+                        x = WIDTH // 2 - 200
+                        y = HEIGHT // 2 - 100
+                        yes_rect = pygame.Rect(x + 50, y + 120, 100, 40)
+                        no_rect = pygame.Rect(x + 250, y + 120, 100, 40)
                         if yes_rect.collidepoint(event.pos):
                             removeBody(pending_body)
-                            if followed_body==pending_body:
-                                followed_body=None
-                            pending_body=None
-                            clicked_hud_delete=True
+                            if followed_body == pending_body:
+                                followed_body = None
+                            pending_body = None
                         elif no_rect.collidepoint(event.pos):
-                            pending_body=None
-                            clicked_hud_delete=True
-                            
+                            pending_body = None
+                                                
                     current_time = pygame.time.get_ticks()
                     mouseX,mouseY=event.pos
+                    clicked_body=None
                     if current_time-last_click_time<threshold:
                         for body in bodies:
                             screenX,screenY=worldToScreen(body.getX(),body.getY(),camX,camY,zoom,WIDTH,HEIGHT)
@@ -165,6 +166,10 @@ def run():
                             clicked_body=None
                     else:
                         last_click_time=current_time 
+                    if buttons["save"].isClicked(event.pos):
+                        saveCurrent("save")
+                    elif buttons["load"].isClicked(event.pos):
+                        loadSaved("save")
                     if buttons["add"].isClicked(event.pos):
                         addMode = not addMode
                         removeMode=False
@@ -273,6 +278,9 @@ def run():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
+                if event.key == pygame.K_0:
+                    camX,camY=0,0
+                    zoom=1.0
                 if event.key == pygame.K_1:
                     loadPreset("Stationary Central Body")
                 if event.key == pygame.K_2:
@@ -314,7 +322,7 @@ def run():
         screen.fill(BLACK)
         for body in bodies:
             drawTrail(screen,body,camX,camY,zoom)
-            drawBody(screen,body,camX,camY,zoom)
+            drawBody(screen,body,camX,camY,zoom,font)
         mousePos = pygame.mouse.get_pos()
         if addPanel:
             panelX = WIDTH // 2 - 150
@@ -342,10 +350,12 @@ def run():
             button.update(mousePos)
             button.draw(screen,font)
         #print("blitting text")
+        fpsText=font.render(f"{int(clock.get_fps())} fps",True,WHITE)
+        screen.blit(fpsText,(140,100))
         pauseText = font.render("PAUSED" if paused else "RUNNING", True, WHITE)
         screen.blit(pauseText, (50, 100))
         controlsText = font.render("SPACE: pause | 1/2/3: presets | WASD: pan | scroll: zoom", True, WHITE)
-        screen.blit(controlsText, (140,100))
+        screen.blit(controlsText, (200,100))
         delete_buttons=drawInfoPanel(screen,bodies,font)
         
         if addMode:
@@ -357,6 +367,19 @@ def run():
         if editMode:
             hintText=font.render("EDIT MODE ACTIVE",True,YELLOW)
             screen.blit(hintText,(500,100))
+        if pending_body:
+            x = WIDTH // 2 - 200
+            y = HEIGHT // 2 - 100
+            pygame.draw.rect(screen, (20, 20, 20), (x, y, 400, 200))
+            pygame.draw.rect(screen, WHITE, (x, y, 400, 200), 2)
+            confirmText = font.render(f"Remove {pending_body.getName()}?", True, WHITE)
+            screen.blit(confirmText, (x + 20, y + 40))
+            yes_rect = pygame.Rect(x + 50, y + 120, 100, 40)
+            no_rect = pygame.Rect(x + 250, y + 120, 100, 40)
+            pygame.draw.rect(screen, (150, 0, 0), yes_rect, border_radius=5)
+            pygame.draw.rect(screen, (60, 60, 60), no_rect, border_radius=5)
+            screen.blit(font.render("Yes", True, WHITE), (yes_rect.x + 35, yes_rect.y + 10))
+            screen.blit(font.render("No", True, WHITE), (no_rect.x + 35, no_rect.y + 10))
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()

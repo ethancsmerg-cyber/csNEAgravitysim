@@ -128,7 +128,11 @@ def saveCurrent(filename):
 
 #load a save file by reading each line and turning each into attributes
 def loadSaved(filename):
-    saveFile = open(f"{filename}.txt","r")
+    try:
+        saveFile = open(f"{filename}.txt","r")
+    except FileNotFoundError:
+        return "file not found" #add in an error message
+    bodies.clear()
     while True:
         name = saveFile.readline().strip()
         if not name:
