@@ -57,7 +57,8 @@ class inputBox:
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = self.rect.collidepoint(event.pos)
         if event.type == pygame.KEYDOWN and self.active:
-                self.text += event.unicode
+                if event.unicode.isprintable():
+                    self.text += event.unicode
 
     def getValue(self):
         try:
@@ -98,6 +99,8 @@ def drawBody(screen,body,camX,camY,zoom,font):
 n=1 #number of times step is called during run
 #main function
 def run():
+    global G,dt,n
+
     pygame.init()
     screen = pygame.display.set_mode((WIDTH,HEIGHT))
     pygame.display.set_caption("Gravity Simulator")
@@ -106,7 +109,7 @@ def run():
     camX,camY=0,0
     zoom=1.0 #cahnged this from 1.0 add into documentation
     #load the preset for testing
-    loadPreset("Stationary Central Body")
+    #loadPreset("Stationary Central Body")
     #print(bodies)
     paused = False
     running=True
@@ -124,7 +127,7 @@ def run():
     addPanel=None
     editPanel=None
     settingsPanel=None
-    
+
     #left side buttons
     buttons={
         "add": Button(btnX,160,btnW,btnH,"Add Body"),
@@ -149,6 +152,7 @@ def run():
 
     #main loop
     while running:
+        activePanel=addPanel or editPanel or settingsPanel
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running=False
@@ -355,7 +359,7 @@ def run():
                     elif settingsPanel["cancel"].isClicked(event.pos):
                         settingsPanel = None
             #keybinds for presets and pause/resume
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and not activePanel:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
                 if event.key == pygame.K_0:
@@ -369,31 +373,33 @@ def run():
                     loadPreset("Three Bodies")
 
             #zooming
-            if event.type == pygame.MOUSEWHEEL:
+            if event.type == pygame.MOUSEWHEEL and not activePanel:
                 zoom += event.y * 0.1
+        activePanel = addPanel or editPanel or settingsPanel
         keys = pygame.key.get_pressed()
 
         #moving with wasd/arrow keys
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            camX -= 10 / zoom
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            camX += 10 / zoom
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            camY -= 10 / zoom
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            camY += 10 / zoom
-        activePanel=addPanel or editPanel or settingsPanel
+        if not activePanel:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                camX -= 10 / zoom
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                camX += 10 / zoom
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
+                camY -= 10 / zoom
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                camY += 10 / zoom
+            
 
         #typing and deleting in the active panel
         if activePanel:
-            keys = pygame.key.get_pressed()
             if keys[pygame.K_BACKSPACE]:
                 backspaceHeld += 1
                 if backspaceHeld == 1 or (backspaceHeld > backspaceDelay and backspaceHeld % backspaceInterval == 0):
                     for box in activePanel.values():
                         if isinstance(box, inputBox) and box.active:
                             box.text = box.text[:-1]
-            
+            else:
+                backspaceHeld=0
         else:
             backspaceHeld = 0
 
@@ -467,13 +473,13 @@ def run():
         #hint text rendering
         if addMode:
             hintText = font.render("Right click to place body", True, YELLOW)
-            screen.blit(hintText, (500,100))
+            screen.blit(hintText, (550,100))
         if removeMode:
             hintText=font.render("REMOVE MODE ACTIVE",True,RED)
-            screen.blit(hintText,(500,100))
+            screen.blit(hintText,(550,100))
         if editMode:
             hintText=font.render("EDIT MODE ACTIVE",True,YELLOW)
-            screen.blit(hintText,(500,100))
+            screen.blit(hintText,(550,100))
 
         #removal confirmation
         if pending_body:
