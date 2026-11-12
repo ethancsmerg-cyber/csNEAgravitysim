@@ -8,6 +8,9 @@ coordRange = [-10000,10000]
 massRange = [10**-10,10**30]
 vRange = [-3*10**8,3*10**8]
 aRange = [-10**10,10**10]
+gRange = [0.0001, 10**6]
+dtRange = [0.000001, 0.01]
+speedRange = [1, 100]
 #change to bounds
 
 #add a body to the simulation 
@@ -23,21 +26,13 @@ def addBody(name,x,y,m,vx,vy):
         print("invalid input, try again")
 
 #calculate the body forces and apply them by updating the positions.
-def step(bodies,G,dt):
+def step(bodies, G, dt):
     for i in range(len(bodies)):
-        for j in range(len(bodies)):
-            if i!=j:
-                dx=bodies[j].getX()-bodies[i].getX()
-                dy=bodies[j].getY()-bodies[i].getY()
-                distSq=(dx**2+dy**2)+0.0000000000000001 #softening factor
-                dist=distSq**0.5
-                f = (G*bodies[i].getM()*bodies[j].getM())/distSq
-                fx = f*(dx/dist)
-                fy = f*(dy/dist)
-                bodies[i].setAX(bodies[i].getAX()+(fx/bodies[i].getM()))
-                bodies[i].setAY(bodies[i].getAY()+(fy/bodies[i].getM()))
-    for i in range(len(bodies)):
-        bodies[i].update(dt)
+        for j in range(i + 1, len(bodies)):
+            bodies[i].applyG(bodies[j], G)
+
+    for body in bodies:
+        body.update(dt)
 
 #check if an input is numeric
 def isNumeric(value):
@@ -65,45 +60,41 @@ def getBody(name):
 
 #remove a body from the simulation
 def removeBody(name):
-    selectedBody = getBody(name)
-    if selectedBody is None:
-        return
+    if isinstance(name,Body):
+        if name in bodies:
+            bodies.remove(name)
     else:
-        confirmation = input("do you want to remove this body? (y/n): ")
-        if confirmation.lower() == "y":
+        selectedBody=getBody(name)
+        if selectedBody:
             bodies.remove(selectedBody)
-            #display()
 
 #edit a body within the simulation
 def editPos(name,newX,newY):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
-    else:
-        if validateInput(newX,coordRange) and validateInput(newY,coordRange):
+    if validateInput(newX,coordRange) and validateInput(newY,coordRange):
             selectedBody.setXY(newX,newY)
-        else:
-            print("invalid input, try again")
+    else:
+        print("invalid input, try again")
 
 def editM(name,newM):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
-    else: 
-        if validateInput(newM,massRange):
-            selectedBody.setM(newM)
-        else:
-            print("invalid input, try again")
+    if validateInput(newM,massRange):
+        selectedBody.setM(newM)
+    else:
+         print("invalid input, try again")
 
 def editV(name,newVX,newVY):
-    selectedBody=getBody(name)
+    selectedBody=name if name in bodies else None
     if selectedBody is None:
         return
+    if validateInput(newVX,vRange) and validateInput(newVY,vRange):
+        selectedBody.setV(newVX,newVY)
     else:
-        if validateInput(newVX,vRange) and validateInput(newVY,vRange):
-            selectedBody.setV(newVX,newVY)
-        else:
-            print("invalid input, try again")
+        print("invalid input, try again")
 
 
 def loadPreset(presetChoice):
@@ -113,12 +104,12 @@ def loadPreset(presetChoice):
     #camera.reset()
 
     match presetChoice:
-        case "Earth-Moon":
-            addBody("Earth",0, 0, 80000000, 0, 0)
-            addBody("Moon",400, 0, 1000000, 0,-math.sqrt(1000 * 80000000 / 400))
+        case "Stationary Central Body":
+            addBody("Anchor Star",0, 0, 10000000000, 0, 0)
+            addBody("Moon",500, 0, 10000, 0,-math.sqrt(1000 * 10000000000 / 500))
         case "Binary Star":
-            addBody("Star1",-200, 0, 5000000, 0, -100)
-            addBody("Star2",200, 0, 5000000, 0, 100)
+            addBody("Star1",-200, 0, 5000000, 0, -2500)
+            addBody("Star2",200, 0, 5000000, 0, 2500)
         case "Three Bodies":
             addBody("Body1",0, -200, 3000000, 100, 0)
             addBody("Body2",200, 100, 3000000, -50, -80)
@@ -140,7 +131,11 @@ def saveCurrent(filename):
 
 #load a save file by reading each line and turning each into attributes
 def loadSaved(filename):
-    saveFile = open(f"{filename}.txt","r")
+    try:
+        saveFile = open(f"{filename}.txt","r")
+    except FileNotFoundError:
+        return "file not found" #add in an error message
+    bodies.clear()
     while True:
         name = saveFile.readline().strip()
         if not name:
@@ -154,4 +149,3 @@ def loadSaved(filename):
         ay=float(saveFile.readline())
         addBody(name,x,y,m,vx,vy)
     saveFile.close() #had to close file to prevent corruption
-

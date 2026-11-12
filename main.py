@@ -137,9 +137,8 @@ zoom=1.0
 screen=pygame.display.set_mode((WIDTH,HEIGHT))
 screen.fill(BLACK)
 
-
 for body in bodies:
-    drawBody(screen, body, camX, camY, zoom)
+    drawBody(screen, body, camX, camY, zoom)        
 
 pygame.display.flip()
 pygame.time.wait(3000)
